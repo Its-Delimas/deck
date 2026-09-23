@@ -68,6 +68,18 @@ tags; Linux is the first-class target.
 - Node 18+
 - WebKitGTK 4.1 (`libwebkit2gtk-4.1-dev`) and GTK 3
 
+## Install
+
+```sh
+make install            # binary, icons and menu launcher under ~/.local
+make desktop-shortcut   # the above, plus a launcher on the desktop
+make uninstall          # remove everything it installed
+```
+
+`make install` needs no root: it puts the binary in `~/.local/bin/deck` and the
+launcher in `~/.local/share/applications`, so deck shows up in the application
+menu and in search. Install elsewhere with `make install PREFIX=/usr/local`.
+
 ## Development
 
 ```sh
