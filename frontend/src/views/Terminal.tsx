@@ -97,7 +97,7 @@ export function Terminal() {
       t.el.style.display = id === active ? "block" : "none";
     }
     const current = terms.current.get(active);
-    if (current) {
+    if (current && mount.clientWidth > 0) {
       current.fit.fit();
       current.term.focus();
       api.TermResize(active, current.term.cols, current.term.rows);
@@ -107,7 +107,9 @@ export function Terminal() {
   useEffect(() => {
     const onResize = () => {
       const current = terms.current.get(active);
-      if (!current) return;
+      // The view stays mounted while hidden; fitting a zero-sized element
+      // would hand the PTY nonsense dimensions.
+      if (!current || !hostRef.current?.clientWidth) return;
       current.fit.fit();
       api.TermResize(active, current.term.cols, current.term.rows);
     };

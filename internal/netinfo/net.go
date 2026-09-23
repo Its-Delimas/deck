@@ -36,7 +36,7 @@ func NewCollector() *Collector { return &Collector{} }
 func (c *Collector) All() ([]Conn, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if time.Since(c.cachedAt) < 1500*time.Millisecond && c.cache != nil {
+	if time.Since(c.cachedAt) < 2500*time.Millisecond && c.cache != nil {
 		return c.cache, nil
 	}
 	list, err := scan()

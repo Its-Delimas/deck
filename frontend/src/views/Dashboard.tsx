@@ -49,7 +49,7 @@ function delta(series: number[]): number | undefined {
 
 export function Dashboard() {
   const m = useMetrics();
-  const { go, settings, jump } = useApp();
+  const { go, settings, jump, update } = useApp();
   const { data: procs } = usePoll(() => api.ListProcesses(), 2000, []);
   const { data: ports } = usePoll(() => api.ListPorts(), 4000, []);
   const { data: services } = usePoll(() => api.ListServices(), 6000, []);
@@ -107,7 +107,7 @@ export function Dashboard() {
               { value: "1000", label: "1 Hz" },
               { value: "3000", label: "0.3 Hz" },
             ]}
-            onChange={(v) => api.SetPollInterval(Number(v))}
+            onChange={(v) => update({ pollInterval: Number(v) })}
           />
         </div>
       </header>

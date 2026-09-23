@@ -34,7 +34,7 @@ export const useApp = () => {
 };
 
 const DEFAULTS = {
-  pollInterval: 1000, accent: "indigo", density: "comfortable", cpuMode: "total",
+  theme: "dark", pollInterval: 1000, accent: "indigo", density: "comfortable", cpuMode: "total",
   tempUnit: "c", recentProjects: [], activeProject: "", confirmKill: true,
   showSystemProcs: true, startPage: "dashboard",
 } as unknown as main.Settings;
@@ -57,11 +57,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }).catch(() => {});
   }, []);
 
-  // Theme-ish preferences live on the root element so CSS can react to them.
+  // Presentation preferences live on the root element so CSS can react to them.
   useEffect(() => {
-    document.documentElement.dataset.accent = settings.accent;
-    document.documentElement.dataset.density = settings.density;
-  }, [settings.accent, settings.density]);
+    const root = document.documentElement;
+    root.dataset.accent = settings.accent;
+    root.dataset.density = settings.density;
+    const apply = () => {
+      const system = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+      root.dataset.theme = settings.theme === "system" ? system : settings.theme;
+    };
+    apply();
+    const mq = window.matchMedia("(prefers-color-scheme: light)");
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, [settings.accent, settings.density, settings.theme]);
 
   const update = useCallback((patch: Partial<main.Settings>) => {
     setSettings((prev) => {

@@ -48,6 +48,19 @@ export function Settings() {
           </div>
           <div className="setting">
             <div className="setting__text">
+              <div className="setting__name">Theme</div>
+              <div className="setting__desc">deck is designed dark first; the light theme uses the same layout and spacing.</div>
+            </div>
+            <div className="setting__control">
+              <Segmented
+                value={settings.theme}
+                options={[{ value: "dark", label: "Dark" }, { value: "light", label: "Light" }, { value: "system", label: "System" }]}
+                onChange={(v) => update({ theme: v })}
+              />
+            </div>
+          </div>
+          <div className="setting">
+            <div className="setting__text">
               <div className="setting__name">Density</div>
               <div className="setting__desc">Compact reduces row height and padding for smaller displays.</div>
             </div>

@@ -199,7 +199,9 @@ export function Sparkline({ data, color, height = 18, width = 60, max }: {
     ctx.strokeStyle = color;
     ctx.lineWidth = 1.2;
     ctx.stroke();
-  }, [data, color, height, width, max]);
+    // `data` is a ring buffer mutated in place, so the last sample is what
+    // actually signals a redraw.
+  }, [data, data.length, data[data.length - 1], color, height, width, max]);
   return <canvas ref={ref} style={{ width, height, display: "block" }} />;
 }
 

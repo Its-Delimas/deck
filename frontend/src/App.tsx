@@ -26,6 +26,12 @@ const ORDER = ["dashboard", "processes", "network", "storage", "services", "term
 function Shell() {
   const { view, go, setPalette } = useApp();
   const [collapsed, setCollapsed] = useState(() => window.innerWidth < 1080);
+  // Terminal sessions outlive navigation: once opened, the view stays mounted
+  // and is only hidden, so shells and scrollback survive a trip to Dashboard.
+  const [termMounted, setTermMounted] = useState(false);
+  useEffect(() => {
+    if (view === "terminal") setTermMounted(true);
+  }, [view]);
 
   useEffect(() => {
     const onResize = () => setCollapsed(window.innerWidth < 1080);
@@ -57,7 +63,11 @@ function Shell() {
           {view === "network" && <Network />}
           {view === "storage" && <Storage />}
           {view === "services" && <Services />}
-          {view === "terminal" && <Terminal />}
+          {termMounted && (
+            <div style={{ display: view === "terminal" ? "contents" : "none" }}>
+              <Terminal />
+            </div>
+          )}
           {view === "logs" && <Logs />}
           {view === "settings" && <Settings />}
           {view === "project" && <Project />}

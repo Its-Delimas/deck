@@ -128,7 +128,7 @@
 .body[data-collapsed="true"] .navitem__meta,
 .body[data-collapsed="true"] .sidebar__group { display: none; }
 
-.view { display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
+.view { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
 .view__head {
   display: flex;
   align-items: center;

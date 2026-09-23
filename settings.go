@@ -10,6 +10,7 @@ import (
 // Settings is persisted to the user's config directory so preferences and the
 // recent-project list survive restarts.
 type Settings struct {
+	Theme          string   `json:"theme"` // dark | light | system
 	PollInterval   int      `json:"pollInterval"`
 	Accent         string   `json:"accent"`
 	Density        string   `json:"density"`  // comfortable | compact
@@ -24,7 +25,7 @@ type Settings struct {
 
 func defaultSettings() Settings {
 	return Settings{
-		PollInterval: 1000, Accent: "indigo", Density: "comfortable",
+		Theme: "dark", PollInterval: 1000, Accent: "indigo", Density: "comfortable",
 		CPUMode: "total", TempUnit: "c", ConfirmKill: true, StartPage: "dashboard",
 	}
 }
@@ -46,6 +47,9 @@ func loadSettings() Settings {
 	_ = json.Unmarshal(b, &s)
 	if s.PollInterval < 250 {
 		s.PollInterval = 1000
+	}
+	if s.Theme == "" {
+		s.Theme = "dark"
 	}
 	return s
 }

@@ -82,6 +82,7 @@ export namespace main {
 		}
 	}
 	export class Settings {
+	    theme: string;
 	    pollInterval: number;
 	    accent: string;
 	    density: string;
@@ -99,6 +100,7 @@ export namespace main {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.theme = source["theme"];
 	        this.pollInterval = source["pollInterval"];
 	        this.accent = source["accent"];
 	        this.density = source["density"];
