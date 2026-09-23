@@ -18,10 +18,11 @@ const Storage = lazy(() => import("./views/Storage").then((m) => ({ default: m.S
 const Services = lazy(() => import("./views/Services").then((m) => ({ default: m.Services })));
 const Terminal = lazy(() => import("./views/Terminal").then((m) => ({ default: m.Terminal })));
 const Logs = lazy(() => import("./views/Logs").then((m) => ({ default: m.Logs })));
+const About = lazy(() => import("./views/About").then((m) => ({ default: m.About })));
 const Settings = lazy(() => import("./views/Settings").then((m) => ({ default: m.Settings })));
 const Project = lazy(() => import("./views/Project").then((m) => ({ default: m.Project })));
 
-const ORDER = ["dashboard", "processes", "network", "storage", "services", "terminal", "logs"] as const;
+const ORDER = ["dashboard", "processes", "network", "storage", "services", "terminal", "logs", "about"] as const;
 
 function Shell() {
   const { view, go, setPalette } = useApp();
@@ -69,6 +70,7 @@ function Shell() {
             </div>
           )}
           {view === "logs" && <Logs />}
+          {view === "about" && <About />}
           {view === "settings" && <Settings />}
           {view === "project" && <Project />}
         </Suspense>

@@ -21,20 +21,35 @@ export function Terminal() {
   const terms = useRef(new Map<string, { term: XTerm; fit: FitAddon; el: HTMLDivElement }>());
   const counter = useRef(0);
 
+  // xterm needs literal colours, so the palette is derived from the active
+  // theme rather than hardcoded: a light interface gets a light terminal.
   const theme = useCallback(() => {
     const css = getComputedStyle(document.documentElement);
     const v = (name: string, fallback: string) => css.getPropertyValue(name).trim() || fallback;
+    const light = document.documentElement.dataset.theme === "light";
+    const ansi = light
+      ? {
+          black: "#2b3038", red: "#c4292d", green: "#12794f", yellow: "#8a6100",
+          blue: "#0a5fd0", magenta: "#8a3ecf", cyan: "#00807a", white: "#e6e8ec",
+          brightBlack: "#6b7280", brightRed: "#e04447", brightGreen: "#17915e",
+          brightYellow: "#a37500", brightBlue: "#2b74e0", brightMagenta: "#9c54e0",
+          brightCyan: "#0a938c", brightWhite: "#ffffff",
+        }
+      : {
+          black: "#1a1e25", red: "#f2585b", green: "#3ecf8e", yellow: "#e3b341",
+          blue: "#58a6ff", magenta: "#b98bff", cyan: "#2dd4bf", white: "#c9cedb",
+          brightBlack: "#4a515c", brightRed: "#ff7b7e", brightGreen: "#5ee3a6",
+          brightYellow: "#f0ca6a", brightBlue: "#7cb9ff", brightMagenta: "#cba6ff",
+          brightCyan: "#5fe3d3", brightWhite: "#ffffff",
+        };
+    const accent = v("--accent", "#6e7bff");
     return {
-      background: "#07080a",
-      foreground: v("--fg", "#e7e9ee"),
-      cursor: v("--accent", "#6e7bff"),
-      cursorAccent: "#07080a",
-      selectionBackground: "rgba(110,123,255,0.28)",
-      black: "#1a1e25", red: "#f2585b", green: "#3ecf8e", yellow: "#e3b341",
-      blue: "#58a6ff", magenta: "#b98bff", cyan: "#2dd4bf", white: "#c9cedb",
-      brightBlack: "#4a515c", brightRed: "#ff7b7e", brightGreen: "#5ee3a6",
-      brightYellow: "#f0ca6a", brightBlue: "#7cb9ff", brightMagenta: "#cba6ff",
-      brightCyan: "#5fe3d3", brightWhite: "#ffffff",
+      background: v("--term-bg", light ? "#ffffff" : "#07080a"),
+      foreground: v("--fg", light ? "#12151a" : "#e7e9ee"),
+      cursor: accent,
+      cursorAccent: v("--term-bg", light ? "#ffffff" : "#07080a"),
+      selectionBackground: v("--accent-soft", "rgba(110,123,255,0.28)"),
+      ...ansi,
     };
   }, []);
 
@@ -75,6 +90,15 @@ export function Terminal() {
     if (sessions.length === 0) spawn(project?.path ?? host?.home ?? "");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const next = theme();
+      for (const { term } of terms.current.values()) term.options.theme = next;
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "data-accent"] });
+    return () => observer.disconnect();
+  }, [theme]);
 
   useEffect(() => {
     EventsOn("term:data", (id: string, data: string) => {

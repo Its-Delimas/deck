@@ -41,6 +41,20 @@ memory cost as one unit.
 **Logs** — the system journal and container output streamed, filtered by
 severity, searchable, pausable.
 
+**This machine** — a full hardware inventory: model, board, BIOS, CPU topology
+and cache, memory, GPU, disks, panel size, network adapters, firmware and
+Secure Boot state. Every value shows the `/sys` path or command it came from,
+and anything the hardware does not report is marked unavailable rather than
+filled in with a guess. Battery health is the firmware's measured full charge
+against its design capacity, with the cycle count.
+
+**Health check** — live measurements, not specifications: real load on every
+core with the clock sampled for throttling, peak temperature caused and
+observed, memory copy bandwidth, a 128 MB incompressible disk write and
+read-back, and the battery charge counter sampled over ten seconds. Useful when
+you are looking at a second-hand machine and want to know what it actually
+does. Results and the whole inventory copy to the clipboard as plain text.
+
 **Command palette** — `Ctrl K` for everything: switch views, open a project,
 jump to a port, restart a service, kill a process.
 

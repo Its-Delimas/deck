@@ -3,7 +3,7 @@ import { useApp, type ViewId } from "../../lib/app";
 import { useMetrics } from "../../lib/store";
 import { Tooltip } from "../ui";
 import {
-  IconDashboard, IconLogs, IconNetwork, IconProcesses, IconProject, IconServices,
+  IconDashboard, IconInfo, IconLogs, IconNetwork, IconProcesses, IconProject, IconServices,
   IconSettings, IconStorage, IconTerminal,
 } from "../ui/icons";
 
@@ -59,6 +59,7 @@ export function Sidebar({ collapsed, portCount, serviceCount }: {
       {tools.map(render)}
 
       <div className="spacer" />
+      {render({ id: "about", label: "This machine", icon: <IconInfo size={14} />, key: "8" })}
       {render({ id: "settings", label: "Settings", icon: <IconSettings size={14} />, key: "," })}
       {!collapsed && (
         <div style={{ padding: "8px 8px 2px", color: "var(--fg-4)", fontSize: "var(--fs-xs)" }}>

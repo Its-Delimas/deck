@@ -8,7 +8,8 @@ import { seed, startMetrics } from "./store";
 import { invalidateChartColors } from "../components/chart/Chart";
 
 export type ViewId =
-  | "dashboard" | "project" | "processes" | "network" | "storage" | "services" | "terminal" | "logs" | "settings";
+  | "dashboard" | "project" | "processes" | "network" | "storage" | "services" | "terminal"
+  | "logs" | "about" | "settings";
 
 type Ctx = {
   view: ViewId;

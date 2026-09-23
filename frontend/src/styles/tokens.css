@@ -41,6 +41,10 @@
   --c5: #58a6ff;
   --c6: #b98bff;
 
+  /* Terminal surface: near-black in dark, plain white in light. */
+  --term-bg: #07080a;
+  --scrim: rgba(4, 5, 7, 0.55);
+
   --radius-sm: 4px;
   --radius: 6px;
   --radius-lg: 10px;
@@ -104,6 +108,8 @@
   --ok: #17864f;
   --warn: #9a6b00;
   --danger: #cf3338;
+  --term-bg: #ffffff;
+  --scrim: rgba(18, 22, 30, 0.3);
   --shadow: 0 8px 24px -12px rgba(16, 20, 28, 0.2), 0 1px 3px rgba(16, 20, 28, 0.08);
   --shadow-lg: 0 24px 56px -20px rgba(16, 20, 28, 0.28);
 }

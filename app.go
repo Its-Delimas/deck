@@ -8,6 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"deck/internal/health"
+	"deck/internal/hwinfo"
 	"deck/internal/logs"
 	"deck/internal/netinfo"
 	"deck/internal/proc"
@@ -34,6 +36,9 @@ type App struct {
 
 	settings   Settings
 	settingsMu sync.Mutex
+
+	healthMu     sync.Mutex
+	healthCancel context.CancelFunc
 
 	tickMu   sync.Mutex
 	interval time.Duration
@@ -284,6 +289,48 @@ func (a *App) Quit() { wruntime.Quit(a.ctx) }
 func (a *App) Minimise() { wruntime.WindowMinimise(a.ctx) }
 
 func (a *App) ToggleMaximise() { wruntime.WindowToggleMaximise(a.ctx) }
+
+// ---- Machine inventory and health -------------------------------------
+
+// GetMachineReport returns the hardware inventory. Values come straight from
+// the kernel and firmware; anything the hardware does not report is marked
+// unavailable instead of being filled in.
+func (a *App) GetMachineReport() *hwinfo.Report { return hwinfo.Collect() }
+
+// GetBattery re-reads just the battery, for live updates.
+func (a *App) GetBattery() *hwinfo.Battery { return hwinfo.Collect().Battery }
+
+// RunHealthCheck performs live measurements: real work on the CPU, real bytes
+// through memory and the disk, and a timed sample of the battery counter. It
+// takes around 25 seconds and emits "health:progress" as it goes.
+func (a *App) RunHealthCheck() []health.Check {
+	a.healthMu.Lock()
+	if a.healthCancel != nil {
+		a.healthCancel()
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	a.healthCancel = cancel
+	a.healthMu.Unlock()
+	defer func() {
+		cancel()
+		a.healthMu.Lock()
+		a.healthCancel = nil
+		a.healthMu.Unlock()
+	}()
+
+	return health.Run(ctx, func(id, label string, index, total int) {
+		wruntime.EventsEmit(a.ctx, "health:progress", id, label, index, total)
+	})
+}
+
+// CancelHealthCheck stops a run in progress.
+func (a *App) CancelHealthCheck() {
+	a.healthMu.Lock()
+	defer a.healthMu.Unlock()
+	if a.healthCancel != nil {
+		a.healthCancel()
+	}
+}
 
 // ---- Window -----------------------------------------------------------
 

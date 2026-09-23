@@ -163,7 +163,7 @@ export function Settings() {
 
           <h3>Keyboard</h3>
           <div className="setting"><div className="setting__text"><div className="setting__name">Command palette</div></div><div className="setting__control"><Badge mono>Ctrl K</Badge></div></div>
-          <div className="setting"><div className="setting__text"><div className="setting__name">Switch view</div></div><div className="setting__control"><Badge mono>Ctrl 1–7</Badge></div></div>
+          <div className="setting"><div className="setting__text"><div className="setting__name">Switch view</div></div><div className="setting__control"><Badge mono>Ctrl 1–8</Badge></div></div>
           <div className="setting"><div className="setting__text"><div className="setting__name">Collapse sidebar</div></div><div className="setting__control"><Badge mono>Ctrl B</Badge></div></div>
           <div className="setting"><div className="setting__text"><div className="setting__name">Focus filter</div></div><div className="setting__control"><Badge mono>/</Badge></div></div>
           <div className="setting"><div className="setting__text"><div className="setting__name">Terminate selected process</div></div><div className="setting__control"><Badge mono>Del</Badge></div></div>

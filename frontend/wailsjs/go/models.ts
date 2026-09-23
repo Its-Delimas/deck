@@ -1,3 +1,185 @@
+export namespace health {
+	
+	export class Check {
+	    id: string;
+	    label: string;
+	    value: string;
+	    detail: string;
+	    verdict: string;
+	    method: string;
+	    duration: number;
+	    error: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Check(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.label = source["label"];
+	        this.value = source["value"];
+	        this.detail = source["detail"];
+	        this.verdict = source["verdict"];
+	        this.method = source["method"];
+	        this.duration = source["duration"];
+	        this.error = source["error"];
+	    }
+	}
+
+}
+
+export namespace hwinfo {
+	
+	export class Battery {
+	    present: boolean;
+	    name: string;
+	    manufacturer: string;
+	    model: string;
+	    serial: string;
+	    technology: string;
+	    status: string;
+	    percent: number;
+	    designWh: number;
+	    fullWh: number;
+	    nowWh: number;
+	    health: number;
+	    healthKnown: boolean;
+	    cycles: number;
+	    cyclesKnown: boolean;
+	    voltageV: number;
+	    powerW: number;
+	    onAC: boolean;
+	    source: string;
+	    note: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Battery(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.present = source["present"];
+	        this.name = source["name"];
+	        this.manufacturer = source["manufacturer"];
+	        this.model = source["model"];
+	        this.serial = source["serial"];
+	        this.technology = source["technology"];
+	        this.status = source["status"];
+	        this.percent = source["percent"];
+	        this.designWh = source["designWh"];
+	        this.fullWh = source["fullWh"];
+	        this.nowWh = source["nowWh"];
+	        this.health = source["health"];
+	        this.healthKnown = source["healthKnown"];
+	        this.cycles = source["cycles"];
+	        this.cyclesKnown = source["cyclesKnown"];
+	        this.voltageV = source["voltageV"];
+	        this.powerW = source["powerW"];
+	        this.onAC = source["onAC"];
+	        this.source = source["source"];
+	        this.note = source["note"];
+	    }
+	}
+	export class Field {
+	    label: string;
+	    value: string;
+	    detail: string;
+	    source: string;
+	    note: string;
+	    mono: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new Field(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.label = source["label"];
+	        this.value = source["value"];
+	        this.detail = source["detail"];
+	        this.source = source["source"];
+	        this.note = source["note"];
+	        this.mono = source["mono"];
+	    }
+	}
+	export class Section {
+	    id: string;
+	    title: string;
+	    fields: Field[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Section(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.title = source["title"];
+	        this.fields = this.convertValues(source["fields"], Field);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class Report {
+	    generated: number;
+	    model: string;
+	    vendor: string;
+	    form: string;
+	    sections: Section[];
+	    battery?: Battery;
+	
+	    static createFrom(source: any = {}) {
+	        return new Report(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.generated = source["generated"];
+	        this.model = source["model"];
+	        this.vendor = source["vendor"];
+	        this.form = source["form"];
+	        this.sections = this.convertValues(source["sections"], Section);
+	        this.battery = this.convertValues(source["battery"], Battery);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+
+}
+
 export namespace logs {
 	
 	export class Source {

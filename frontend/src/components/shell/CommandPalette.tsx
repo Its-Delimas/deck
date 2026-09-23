@@ -5,7 +5,7 @@ import type { netinfo, proc, services as svc } from "../../../wailsjs/go/models"
 import { basename, bytes, pct } from "../../lib/format";
 import { Kbd } from "../ui";
 import {
-  IconDashboard, IconExternal, IconGit, IconLogs, IconNetwork, IconProcesses, IconProject,
+  IconDashboard, IconExternal, IconGit, IconInfo, IconLogs, IconNetwork, IconProcesses, IconProject,
   IconRestart, IconSearch, IconServices, IconSettings, IconStorage, IconTerminal, IconTrash,
 } from "../ui/icons";
 
@@ -74,6 +74,7 @@ export function CommandPalette() {
       ["terminal", "Go to Terminal", <IconTerminal size={14} key="t" />],
       ["logs", "Go to Logs", <IconLogs size={14} key="l" />],
       ["project", "Go to Project", <IconProject size={14} key="j" />],
+      ["about", "Go to This machine", <IconInfo size={14} key="a" />],
       ["settings", "Go to Settings", <IconSettings size={14} key="g" />],
     ];
 
@@ -143,6 +144,11 @@ export function CommandPalette() {
       });
     }
 
+    out.push({
+      id: "about:health", group: "Machine", label: "Run hardware health check",
+      icon: <IconInfo size={14} />, keywords: "battery cpu disk memory test benchmark",
+      run: () => jump("about", "run"),
+    });
     out.push({
       id: "set:density", group: "Settings",
       label: `Switch to ${settings.density === "compact" ? "comfortable" : "compact"} density`,
