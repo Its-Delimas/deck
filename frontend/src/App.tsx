@@ -1,28 +1,81 @@
-import {useState} from 'react';
-import logo from './assets/images/logo-universal.png';
-import './App.css';
-import {Greet} from "../wailsjs/go/main/App";
+import { Suspense, lazy, useEffect, useState } from "react";
+import { AppProvider, useApp } from "./lib/app";
+import { usePoll, useHotkey } from "./lib/hooks";
+import * as api from "../wailsjs/go/main/App";
+import { TitleBar } from "./components/shell/TitleBar";
+import { Sidebar } from "./components/shell/Sidebar";
+import { StatusBar } from "./components/shell/StatusBar";
+import { CommandPalette } from "./components/shell/CommandPalette";
+import { Grips } from "./components/shell/Grips";
+import { ToastHost } from "./components/ui";
+import { Dashboard } from "./views/Dashboard";
+import { Processes } from "./views/Processes";
 
-function App() {
-    const [resultText, setResultText] = useState("Please enter your name below 👇");
-    const [name, setName] = useState('');
-    const updateName = (e: any) => setName(e.target.value);
-    const updateResultText = (result: string) => setResultText(result);
+// Screens that pull in heavier dependencies (xterm, deep scans) are split out
+// so the first paint stays fast.
+const Network = lazy(() => import("./views/Network").then((m) => ({ default: m.Network })));
+const Storage = lazy(() => import("./views/Storage").then((m) => ({ default: m.Storage })));
+const Services = lazy(() => import("./views/Services").then((m) => ({ default: m.Services })));
+const Terminal = lazy(() => import("./views/Terminal").then((m) => ({ default: m.Terminal })));
+const Logs = lazy(() => import("./views/Logs").then((m) => ({ default: m.Logs })));
+const Settings = lazy(() => import("./views/Settings").then((m) => ({ default: m.Settings })));
+const Project = lazy(() => import("./views/Project").then((m) => ({ default: m.Project })));
 
-    function greet() {
-        Greet(name).then(updateResultText);
-    }
+const ORDER = ["dashboard", "processes", "network", "storage", "services", "terminal", "logs"] as const;
 
-    return (
-        <div id="App">
-            <img src={logo} id="logo" alt="logo"/>
-            <div id="result" className="result">{resultText}</div>
-            <div id="input" className="input-box">
-                <input id="name" className="input" onChange={updateName} autoComplete="off" name="input" type="text"/>
-                <button className="btn" onClick={greet}>Greet</button>
-            </div>
-        </div>
-    )
+function Shell() {
+  const { view, go, setPalette } = useApp();
+  const [collapsed, setCollapsed] = useState(() => window.innerWidth < 1080);
+
+  useEffect(() => {
+    const onResize = () => setCollapsed(window.innerWidth < 1080);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  useHotkey("mod+k", () => setPalette(true), true);
+  useHotkey("mod+,", () => go("settings"));
+  useHotkey("mod+b", () => setCollapsed((c) => !c));
+  ORDER.forEach((id, i) => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useHotkey(`mod+${i + 1}`, () => go(id));
+  });
+
+  // Counts shown in the sidebar; polled slowly since they are ambient.
+  const { data: ports } = usePoll(() => api.ListPorts(), 5000, []);
+  const { data: services } = usePoll(() => api.ListServices(), 6000, []);
+  const running = (services ?? []).filter((s) => s.status === "running").length;
+
+  return (
+    <div className="shell">
+      <TitleBar />
+      <div className="body" data-collapsed={collapsed}>
+        <Sidebar collapsed={collapsed} portCount={ports?.length ?? 0} serviceCount={running} />
+        <Suspense fallback={<div className="view"><div className="view__body" /></div>}>
+          {view === "dashboard" && <Dashboard />}
+          {view === "processes" && <Processes />}
+          {view === "network" && <Network />}
+          {view === "storage" && <Storage />}
+          {view === "services" && <Services />}
+          {view === "terminal" && <Terminal />}
+          {view === "logs" && <Logs />}
+          {view === "settings" && <Settings />}
+          {view === "project" && <Project />}
+        </Suspense>
+      </div>
+      <StatusBar />
+      <CommandPalette />
+      <Grips />
+    </div>
+  );
 }
 
-export default App
+export default function App() {
+  return (
+    <AppProvider>
+      <ToastHost>
+        <Shell />
+      </ToastHost>
+    </AppProvider>
+  );
+}

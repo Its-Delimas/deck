@@ -57,7 +57,7 @@ type NetStat struct {
 	TxRate    float64          `json:"txRate"`
 	RxTotal   uint64           `json:"rxTotal"`
 	TxTotal   uint64           `json:"txTotal"`
-	Intefaces []InterfaceStat  `json:"interfaces"`
+	Interfaces []InterfaceStat `json:"interfaces"`
 }
 
 type InterfaceStat struct {
@@ -281,7 +281,7 @@ func (c *Collector) Collect() *Snapshot {
 			s.Network.TxRate += is.TxRate
 			s.Network.RxTotal += is.RxTotal
 			s.Network.TxTotal += is.TxTotal
-			s.Network.Intefaces = append(s.Network.Intefaces, is)
+			s.Network.Interfaces = append(s.Network.Interfaces, is)
 		}
 		c.mu.Unlock()
 	}

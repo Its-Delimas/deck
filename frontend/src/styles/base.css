@@ -1,0 +1,57 @@
+@import "./tokens.css";
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+  font-size: var(--fs-md);
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv05" 1, "ss03" 1;
+  overflow: hidden;
+  user-select: none;
+  cursor: default;
+}
+
+::selection { background: var(--accent-soft); color: var(--fg); }
+
+button, input, select, textarea { font: inherit; color: inherit; }
+
+/* Focus is always visible, never on mouse clicks. */
+:focus { outline: none; }
+:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 1px;
+  border-radius: var(--radius-sm);
+}
+
+/* Thin, self-effacing scrollbars that only gain contrast on hover. */
+* { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border: 2px solid transparent;
+  background-clip: content-box;
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--fg-4); background-clip: content-box; }
+::-webkit-scrollbar-corner { background: transparent; }
+
+.mono { font-family: var(--mono); font-variant-ligatures: none; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -0.2px; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dim { color: var(--fg-3); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

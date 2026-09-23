@@ -1,0 +1,109 @@
+/* Design tokens. Dark is the primary theme; the light theme re-maps the same
+   token names so no component needs to know which is active. */
+:root {
+  /* Surfaces, from furthest back to nearest front. */
+  --bg: #08090b;
+  --surface: #0c0e11;
+  --surface-2: #101318;
+  --raised: #14181e;
+  --overlay: #16191f;
+
+  /* Lines. Hairlines everywhere; --line-strong only for real separation. */
+  --line: #1a1e25;
+  --line-strong: #262b34;
+  --line-soft: #14171d;
+
+  /* Text. */
+  --fg: #e7e9ee;
+  --fg-2: #a2a9b6;
+  --fg-3: #6f7784;
+  --fg-4: #4a515c;
+
+  /* Semantics. */
+  --accent: #6e7bff;
+  --accent-fg: #ffffff;
+  --accent-dim: #2b2f52;
+  --accent-soft: rgba(110, 123, 255, 0.12);
+  --ok: #3ecf8e;
+  --ok-soft: rgba(62, 207, 142, 0.12);
+  --warn: #e3b341;
+  --warn-soft: rgba(227, 179, 65, 0.12);
+  --danger: #f2585b;
+  --danger-soft: rgba(242, 88, 91, 0.12);
+  --info: #58a6ff;
+  --info-soft: rgba(88, 166, 255, 0.12);
+
+  /* Chart series — muted, distinguishable, never neon. */
+  --c1: #6e7bff;
+  --c2: #3ecf8e;
+  --c3: #e3b341;
+  --c4: #f2585b;
+  --c5: #58a6ff;
+  --c6: #b98bff;
+
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-lg: 10px;
+
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+
+  --font: "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Cantarell, "Helvetica Neue", sans-serif;
+  --mono: "JetBrains Mono", "SF Mono", "Cascadia Mono", "Roboto Mono", ui-monospace, monospace;
+
+  --fs-xs: 10.5px;
+  --fs-sm: 11.5px;
+  --fs-md: 12.5px;
+  --fs-lg: 14px;
+  --fs-xl: 17px;
+  --fs-2xl: 22px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 24px 64px -16px rgba(0, 0, 0, 0.72), 0 4px 12px rgba(0, 0, 0, 0.4);
+
+  --dur: 120ms;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  --row-h: 28px;
+  --sidebar-w: 208px;
+  --titlebar-h: 38px;
+}
+
+:root[data-density="compact"] {
+  --row-h: 24px;
+  --sp-4: 12px;
+  --sp-6: 18px;
+}
+
+:root[data-accent="violet"] { --accent: #a371f7; --accent-soft: rgba(163, 113, 247, 0.12); --accent-dim: #3a2b52; }
+:root[data-accent="cyan"]   { --accent: #2dd4bf; --accent-soft: rgba(45, 212, 191, 0.12); --accent-dim: #1d3f3c; --accent-fg: #04201c; }
+:root[data-accent="amber"]  { --accent: #f0a742; --accent-soft: rgba(240, 167, 66, 0.12); --accent-dim: #46351c; --accent-fg: #251603; }
+:root[data-accent="rose"]   { --accent: #fb7185; --accent-soft: rgba(251, 113, 133, 0.12); --accent-dim: #4a2530; --accent-fg: #2a0a10; }
+
+:root[data-theme="light"] {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #fbfbfd;
+  --raised: #ffffff;
+  --overlay: #ffffff;
+  --line: #e4e7ec;
+  --line-strong: #d3d8e0;
+  --line-soft: #eef0f4;
+  --fg: #12151a;
+  --fg-2: #515866;
+  --fg-3: #767e8c;
+  --fg-4: #9aa1ad;
+  --accent-soft: rgba(110, 123, 255, 0.1);
+  --ok: #17864f;
+  --warn: #9a6b00;
+  --danger: #cf3338;
+  --shadow: 0 8px 24px -12px rgba(16, 20, 28, 0.2), 0 1px 3px rgba(16, 20, 28, 0.08);
+  --shadow-lg: 0 24px 56px -20px rgba(16, 20, 28, 0.28);
+}

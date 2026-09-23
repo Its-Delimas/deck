@@ -1,0 +1,44 @@
+.chart { position: relative; width: 100%; }
+.chart canvas { display: block; }
+.chart__readout {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.chart__readout-inner {
+  transform: translateX(var(--nudge, 0));
+  padding: 4px 7px;
+  background: var(--overlay);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+.chart__time { color: var(--fg-4); margin-bottom: 2px; }
+.chart__val { display: flex; align-items: center; gap: 5px; color: var(--fg); }
+.chart__swatch { width: 6px; height: 2px; border-radius: 1px; }
+
+.cores { display: flex; align-items: flex-end; gap: 2px; height: 26px; }
+.cores__bar {
+  position: relative;
+  flex: 1;
+  min-width: 3px;
+  height: 100%;
+  background: var(--line-soft);
+  border-radius: 1px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+.cores__bar span {
+  display: block;
+  width: 100%;
+  border-radius: 1px;
+  transition: height 220ms var(--ease), background var(--dur) var(--ease);
+}
+
+.ring { position: relative; display: grid; place-items: center; flex: none; }
+.ring svg { position: absolute; inset: 0; }
+.ring__label { font-size: var(--fs-xs); color: var(--fg-2); font-weight: 500; }
