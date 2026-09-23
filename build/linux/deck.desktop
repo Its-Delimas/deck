@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=deck
+GenericName=System Monitor
+Comment=Developer system monitor and environment manager
+Exec=deck
+Icon=deck
+Terminal=false
+Categories=System;Monitor;
+Keywords=process;processes;ports;services;monitor;cpu;memory;disk;logs;terminal;
+StartupNotify=true
+StartupWMClass=deck
