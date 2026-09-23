@@ -5,6 +5,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import * as api from "../../wailsjs/go/main/App";
 import type { main, project as proj, system } from "../../wailsjs/go/models";
 import { seed, startMetrics } from "./store";
+import { invalidateChartColors } from "../components/chart/Chart";
 
 export type ViewId =
   | "dashboard" | "project" | "processes" | "network" | "storage" | "services" | "terminal" | "logs" | "settings";
@@ -63,6 +64,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     root.dataset.accent = settings.accent;
     root.dataset.density = settings.density;
     const apply = () => {
+      invalidateChartColors();
       const system = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
       root.dataset.theme = settings.theme === "system" ? system : settings.theme;
     };

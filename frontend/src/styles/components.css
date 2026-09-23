@@ -483,3 +483,36 @@ select.select:hover { border-color: var(--fg-4); color: var(--fg); }
   from { opacity: 0; transform: translateY(5px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ---------- Crash screen ---------- */
+.crash {
+  display: grid;
+  place-items: center;
+  height: 100vh;
+  padding: var(--sp-6);
+  background: var(--bg);
+}
+.crash__box {
+  width: min(720px, 100%);
+  padding: var(--sp-5);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.crash__title { font-size: var(--fs-lg); font-weight: 600; color: var(--danger); }
+.crash__text { margin: 6px 0 12px; color: var(--fg-3); font-size: var(--fs-sm); }
+.crash__trace {
+  max-height: 320px;
+  margin: 0 0 var(--sp-4);
+  padding: var(--sp-3);
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--fg-2);
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  user-select: text;
+}

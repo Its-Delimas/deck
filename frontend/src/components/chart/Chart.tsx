@@ -19,8 +19,36 @@ type ChartProps = {
   capacity?: number;
 };
 
+const varCache = new Map<string, string>();
+
 function cssVar(name: string): string {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  let value = varCache.get(name);
+  if (value === undefined) {
+    value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    varCache.set(name, value);
+  }
+  return value;
+}
+
+/**
+ * Canvas does not understand `var(--x)`, so token colours are resolved to
+ * literal values before they touch a 2D context. Results are cached because
+ * getComputedStyle is a layout read.
+ */
+function resolve(color: string): string {
+  if (!color.startsWith("var(")) return color;
+  const name = color.slice(4, color.lastIndexOf(")")).trim();
+  return cssVar(name) || "#8a90a0";
+}
+
+/** Appends an alpha channel to a six-digit hex colour. */
+function withAlpha(color: string, alpha: string): string | null {
+  return /^#[0-9a-f]{6}$/i.test(color) ? color + alpha : null;
+}
+
+/** Drops the resolved-colour cache; call when the theme changes. */
+export function invalidateChartColors() {
+  varCache.clear();
 }
 
 export function Chart({
@@ -75,6 +103,7 @@ export function Chart({
       for (const s of series) {
         const n = s.data.length;
         if (n === 0) continue;
+        const color = resolve(s.color);
         const offset = capacity - n;
         ctx.beginPath();
         for (let i = 0; i < n; i++) {
@@ -84,14 +113,22 @@ export function Chart({
           else ctx.lineTo(x, y);
         }
         if (s.fill !== false) {
-          const grad = ctx.createLinearGradient(0, 0, 0, h);
-          grad.addColorStop(0, `${s.color}38`);
-          grad.addColorStop(1, `${s.color}00`);
           ctx.save();
           ctx.lineTo(xOf(n - 1 + offset), h);
           ctx.lineTo(xOf(offset), h);
           ctx.closePath();
-          ctx.fillStyle = grad;
+          const top = withAlpha(color, "38");
+          const bottom = withAlpha(color, "00");
+          if (top && bottom) {
+            const grad = ctx.createLinearGradient(0, 0, 0, h);
+            grad.addColorStop(0, top);
+            grad.addColorStop(1, bottom);
+            ctx.fillStyle = grad;
+          } else {
+            // Non-hex token (a named or rgb() colour): flat wash instead.
+            ctx.globalAlpha = 0.16;
+            ctx.fillStyle = color;
+          }
           ctx.fill();
           ctx.restore();
           ctx.beginPath();
@@ -102,7 +139,7 @@ export function Chart({
             else ctx.lineTo(x, y);
           }
         }
-        ctx.strokeStyle = s.color;
+        ctx.strokeStyle = color;
         ctx.lineWidth = 1.4;
         ctx.lineJoin = "round";
         if (s.dashed) ctx.setLineDash([3, 3]);
@@ -122,7 +159,7 @@ export function Chart({
         for (const s of series) {
           const v = s.data[hover.i];
           if (v == null) continue;
-          ctx.fillStyle = s.color;
+          ctx.fillStyle = resolve(s.color);
           ctx.beginPath();
           ctx.arc(x, yOf(v), 2.2, 0, Math.PI * 2);
           ctx.fill();
@@ -196,7 +233,7 @@ export function Sparkline({ data, color, height = 18, width = 60, max }: {
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     });
-    ctx.strokeStyle = color;
+    ctx.strokeStyle = resolve(color);
     ctx.lineWidth = 1.2;
     ctx.stroke();
     // `data` is a ring buffer mutated in place, so the last sample is what
