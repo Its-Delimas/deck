@@ -167,7 +167,7 @@ export function Network() {
                       <td className="num dim">{c.pid || "—"}</td>
                       <td className="mono dim" style={{ fontSize: "var(--fs-xs)" }}>{c.local}</td>
                       <td className="mono dim truncate" style={{ fontSize: "var(--fs-xs)" }} title={c.cwd}>
-                        {c.cwd ? tildePath(c.cwd, host?.home ?? "") : "—"}
+                        {c.cwd && c.cwd !== host?.home ? tildePath(c.cwd, host?.home ?? "") : "—"}
                       </td>
                       <td className="right">
                         <div className="row" style={{ justifyContent: "flex-end", gap: 2 }}>

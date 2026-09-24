@@ -72,23 +72,37 @@ signal control.
 
 ![Processes](docs/screenshots/processes.png)
 
-**This machine** — the inventory with its sources, and battery wear measured
-from the firmware's own counters.
+**Network** — every listening port joined to the process that owns it and the
+directory it was started from.
+
+![Network](docs/screenshots/network.png)
+
+**This machine** — the inventory with its sources, battery wear from the
+firmware's own counters, and health checks measured live.
 
 ![Hardware inventory](docs/screenshots/about.png)
 
-**Health check** — live measurements: real load on every core, thermals under
-that load, memory bandwidth, disk throughput and a timed battery sample.
+**Logs** — the journal streamed with real timestamps, severities and units,
+filterable and searchable.
 
-![Health check](docs/screenshots/health-check.png)
+![Logs](docs/screenshots/logs.png)
 
 <details>
 <summary>More screens</summary>
 
 **Project mode** — the processes, ports, git state and scripts of one project,
-with script output streaming in place.
+with script output streaming in place. (Light theme.)
 
 ![Project mode](docs/screenshots/project.png)
+
+**Opening a project** — recent projects and repositories discovered under your
+home directory.
+
+![Project picker](docs/screenshots/project-picker.png)
+
+**Terminal** — real PTY sessions that follow the interface theme.
+
+![Terminal](docs/screenshots/terminal.png)
 
 **Services** — databases, caches and containers from systemd and Docker.
 
@@ -98,6 +112,11 @@ with script output streaming in place.
 files in a tree.
 
 ![Storage](docs/screenshots/storage.png)
+
+**Health check** — every figure measured on the spot, with the method it used.
+(Light theme.)
+
+![Health check](docs/screenshots/health-check.png)
 
 **Settings** — accent, theme, density, sample rate and safety preferences.
 

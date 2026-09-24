@@ -106,8 +106,8 @@ export function Logs() {
         <h1 className="view__title">Logs</h1>
         <span className="view__meta num">
           {filtered.length.toLocaleString()} lines
-          {counts.error > 0 && <span className="lvl-error"> · {counts.error} errors</span>}
-          {counts.warn > 0 && <span className="lvl-warn"> · {counts.warn} warnings</span>}
+          {counts.error > 0 && <span className="lvl-error"> · {counts.error} error{counts.error > 1 ? "s" : ""}</span>}
+          {counts.warn > 0 && <span className="lvl-warn"> · {counts.warn} warning{counts.warn > 1 ? "s" : ""}</span>}
         </span>
         <div className="view__tools">
           <select className="select" value={source} onChange={(e) => setSource(e.target.value)} aria-label="Log source">
