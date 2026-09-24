@@ -69,7 +69,11 @@ jobs:
         run: go install github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }}
 
       - name: Install NSIS
-        run: choco install nsis --no-progress -y
+        # Chocolatey does not refresh PATH for later steps, so point at it
+        # explicitly — otherwise Wails silently skips the installer.
+        run: |
+          choco install nsis --no-progress -y
+          echo "C:\Program Files (x86)\NSIS" >> $env:GITHUB_PATH
 
       - name: Resolve version
         id: version
@@ -91,6 +95,9 @@ jobs:
             [ -f "$f" ] && cp "$f" "dist/deck-$version-windows-amd64-installer.exe"
           done
           ls -l dist
+          # A release that promises an installer must actually carry one.
+          test -f "dist/deck-$version-windows-amd64-installer.exe" \
+            || { echo "::error::NSIS produced no installer — check that makensis is on PATH"; exit 1; }
 
       - uses: actions/upload-artifact@v4
         with:
