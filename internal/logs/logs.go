@@ -101,7 +101,8 @@ func build(ctx context.Context, src Source) *exec.Cmd {
 	case "docker":
 		return exec.CommandContext(ctx, "docker", "logs", "-f", "--tail", "400", src.Target)
 	case "command":
-		return exec.CommandContext(ctx, "sh", "-c", src.Target)
+		shell, flag := commandShell()
+		return exec.CommandContext(ctx, shell, flag, src.Target)
 	default:
 		args := []string{"-f", "-n", "400", "--no-pager", "-o", "short-iso"}
 		if src.Target != "" {
