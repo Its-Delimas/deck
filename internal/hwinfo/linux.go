@@ -86,7 +86,7 @@ func collect(r *Report) {
 		osSection(),
 		firmwareSection(),
 	}
-	r.Battery = readBattery()
+	r.Battery = ReadBattery()
 }
 
 func systemSection() Section {
@@ -708,9 +708,9 @@ func secureBoot() (bool, bool) {
 	return false, false
 }
 
-// readBattery converts the raw power-supply counters into watt-hours. Laptops
+// ReadBattery converts the raw power-supply counters into watt-hours. Laptops
 // expose either charge (µAh) or energy (µWh); both are handled.
-func readBattery() *Battery {
+func ReadBattery() *Battery {
 	dirs, _ := filepath.Glob("/sys/class/power_supply/BAT*")
 	if len(dirs) == 0 {
 		return &Battery{Note: "no battery detected — this machine reports no BAT device"}

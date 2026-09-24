@@ -1,4 +1,4 @@
-//go:build !linux
+//go:build !linux && !windows
 
 package hwinfo
 
@@ -9,5 +9,10 @@ func collect(r *Report) {
 		ID: "system", Title: "System",
 		Fields: []Field{unavailable("Inventory", "", "hardware inventory is implemented for Linux only")},
 	}}
-	r.Battery = &Battery{Note: "battery reporting is implemented for Linux only"}
+	r.Battery = ReadBattery()
+}
+
+// ReadBattery has no implementation on this platform.
+func ReadBattery() *Battery {
+	return &Battery{Note: "battery reporting is implemented for Linux and Windows"}
 }

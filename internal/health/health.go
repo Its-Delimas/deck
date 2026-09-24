@@ -8,6 +8,8 @@ package health
 
 import (
 	"context"
+
+	"deck/internal/hwinfo"
 	"fmt"
 	"math"
 	"math/rand"
@@ -115,9 +117,9 @@ func cpuCheck(ctx context.Context) Check {
 	mops := float64(total) / window.Seconds() / 1e6
 
 	check := Check{
-		Value:  fmt.Sprintf("%.0f Mops/s", mops),
-		Detail: fmt.Sprintf("%d threads · %.0f Mops/s per thread", threads, mops/float64(threads)),
-		Method: fmt.Sprintf("xorshift64 loop on %d goroutines for %s, operations counted", threads, window),
+		Value:   fmt.Sprintf("%.0f Mops/s", mops),
+		Detail:  fmt.Sprintf("%d threads · %.0f Mops/s per thread", threads, mops/float64(threads)),
+		Method:  fmt.Sprintf("xorshift64 loop on %d goroutines for %s, operations counted", threads, window),
 		Verdict: "info",
 	}
 
@@ -370,70 +372,66 @@ func dropCache(path string) {
 }
 
 // batteryCheck samples the charge counter over a real interval instead of
-// trusting the firmware's own "time remaining" estimate.
+// trusting the firmware's own "time remaining" estimate. The reading itself
+// comes from the platform inventory, so it works wherever deck runs.
 func batteryCheck(ctx context.Context) Check {
-	dirs, _ := filepath.Glob("/sys/class/power_supply/BAT*")
-	if len(dirs) == 0 {
-		return Check{Verdict: "skipped", Detail: "no battery is present in this machine",
-			Method: "read /sys/class/power_supply/BAT*"}
+	before := hwinfo.ReadBattery()
+	if !before.Present {
+		return Check{Verdict: "skipped", Detail: before.Note, Method: "read the platform battery counters"}
 	}
-	dir := dirs[0]
-	status := readString(filepath.Join(dir, "status"))
 
-	designWh, fullWh := capacities(dir)
-	wear := ""
-	verdict := "info"
-	if designWh > 0 && fullWh > 0 {
-		health := fullWh / designWh * 100
-		wear = fmt.Sprintf("%.0f%% of design capacity (%.1f Wh of %.1f Wh)", health, fullWh, designWh)
+	wear, verdict := "", "info"
+	if before.HealthKnown {
+		wear = fmt.Sprintf("%.0f%% of design capacity (%.1f Wh of %.1f Wh)",
+			before.Health, before.FullWh, before.DesignWh)
 		switch {
-		case health < 60:
+		case before.Health < 60:
 			verdict = "danger"
-		case health < 80:
+		case before.Health < 80:
 			verdict = "warn"
 		default:
 			verdict = "ok"
 		}
 	}
-	if c, ok := readFloat(filepath.Join(dir, "cycle_count")); ok && c > 0 {
-		wear += fmt.Sprintf(" · %d charge cycles", int(c))
+	if before.CyclesKnown {
+		wear += fmt.Sprintf(" · %d charge cycles", before.Cycles)
 	}
 
-	// Sample the live draw. Ten seconds is long enough for power_now to settle
-	// on most firmware without making the check tedious.
+	// Ten seconds is long enough for the counter to move on most firmware
+	// without making the check tedious.
 	const window = 10 * time.Second
-	startEnergy, ok1 := energyWh(dir)
 	startAt := time.Now()
 	select {
 	case <-ctx.Done():
 		return Check{Verdict: "skipped", Detail: "cancelled"}
 	case <-time.After(window):
 	}
-	endEnergy, ok2 := energyWh(dir)
+	after := hwinfo.ReadBattery()
 	elapsed := time.Since(startAt).Hours()
 
 	measured := ""
-	if ok1 && ok2 && elapsed > 0 {
-		rate := (startEnergy - endEnergy) / elapsed // watts, positive while discharging
+	if before.NowWh > 0 && after.NowWh > 0 && elapsed > 0 {
+		rate := (before.NowWh - after.NowWh) / elapsed // watts, positive while discharging
 		switch {
 		case math.Abs(rate) < 0.5:
-			// Ten seconds is too short to move the counter on some firmware;
-			// fall back to the instantaneous reading and label it as such.
-			if now, ok := instantWatts(dir); ok {
+			// Some firmware updates the counter too slowly to measure this way;
+			// fall back to the instantaneous reading and say so.
+			if after.PowerW > 0 {
 				measured = fmt.Sprintf("%s at %.1f W (instantaneous reading; the charge counter did not move over 10s)",
-					strings.ToLower(status), now)
+					strings.ToLower(after.Status), after.PowerW)
 			} else {
-				measured = fmt.Sprintf("%s — the charge counter did not move over the 10s sample", strings.ToLower(status))
+				measured = fmt.Sprintf("%s — the charge counter did not move over the 10s sample",
+					strings.ToLower(after.Status))
 			}
 		case rate > 0:
 			measured = fmt.Sprintf("drawing %.1f W", rate)
-			if fullWh > 0 {
-				measured += fmt.Sprintf(" — %.1f h from a full charge at this rate", fullWh/rate)
+			if before.FullWh > 0 {
+				measured += fmt.Sprintf(" — %.1f h from a full charge at this rate", before.FullWh/rate)
 			}
 		default:
 			measured = fmt.Sprintf("charging at %.1f W", -rate)
-			if fullWh > 0 && endEnergy < fullWh {
-				measured += fmt.Sprintf(" — %.1f h to full at this rate", (fullWh-endEnergy)/-rate)
+			if before.FullWh > after.NowWh {
+				measured += fmt.Sprintf(" — %.1f h to full at this rate", (before.FullWh-after.NowWh)/-rate)
 			}
 		}
 	}
@@ -446,58 +444,13 @@ func batteryCheck(ctx context.Context) Check {
 		detail += measured
 	}
 	value := "capacity unknown"
-	if designWh > 0 && fullWh > 0 {
-		value = fmt.Sprintf("%.0f%% health", fullWh/designWh*100)
+	if before.HealthKnown {
+		value = fmt.Sprintf("%.0f%% health", before.Health)
 	}
 	return Check{
 		Value: value, Detail: detail, Verdict: verdict,
-		Method: "compare charge_full against charge_full_design, then sample the charge counter over 10s",
+		Method: "compare the measured full charge against the design capacity, then sample the charge counter over 10s",
 	}
-}
-
-// instantWatts reads the charger/battery power the firmware reports right now.
-func instantWatts(dir string) (float64, bool) {
-	if p, ok := readFloat(filepath.Join(dir, "power_now")); ok && p > 0 {
-		return p / 1e6, true
-	}
-	cur, ok := readFloat(filepath.Join(dir, "current_now"))
-	if !ok || cur == 0 {
-		return 0, false
-	}
-	v, _ := readFloat(filepath.Join(dir, "voltage_now"))
-	return cur / 1e6 * v / 1e6, true
-}
-
-func capacities(dir string) (design, full float64) {
-	volts, _ := readFloat(filepath.Join(dir, "voltage_min_design"))
-	if volts == 0 {
-		volts, _ = readFloat(filepath.Join(dir, "voltage_now"))
-	}
-	if d, ok := readFloat(filepath.Join(dir, "energy_full_design")); ok {
-		design = d / 1e6
-		if f, ok := readFloat(filepath.Join(dir, "energy_full")); ok {
-			full = f / 1e6
-		}
-		return
-	}
-	if d, ok := readFloat(filepath.Join(dir, "charge_full_design")); ok {
-		design = d / 1e6 * volts / 1e6
-		if f, ok := readFloat(filepath.Join(dir, "charge_full")); ok {
-			full = f / 1e6 * volts / 1e6
-		}
-	}
-	return
-}
-
-func energyWh(dir string) (float64, bool) {
-	if e, ok := readFloat(filepath.Join(dir, "energy_now")); ok {
-		return e / 1e6, true
-	}
-	if c, ok := readFloat(filepath.Join(dir, "charge_now")); ok {
-		v, _ := readFloat(filepath.Join(dir, "voltage_now"))
-		return c / 1e6 * v / 1e6, true
-	}
-	return 0, false
 }
 
 // smartCheck surfaces the drive's own lifetime counters. Without elevated
