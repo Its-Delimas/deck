@@ -1,6 +1,7 @@
 # deck
 
-A native developer system monitor and environment manager for Linux.
+A native developer system monitor and environment manager.
+Linux first, with Windows and macOS builds.
 
 deck answers the questions you actually have about your development machine —
 what is eating the CPU, what is listening on port 3000, which services are
