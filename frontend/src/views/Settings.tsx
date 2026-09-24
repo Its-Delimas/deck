@@ -14,7 +14,7 @@ const ACCENTS = [
 ];
 
 export function Settings() {
-  const { settings, update, host, recent } = useApp();
+  const { settings, update, host, recent, version } = useApp();
   const m = useMetrics();
   const toast = useToast();
 
@@ -158,6 +158,22 @@ export function Settings() {
             </div>
             <div className="setting__control">
               <Button size="sm" variant="ghost" icon={<IconRefresh size={12} />} onClick={() => location.reload()}>Reload UI</Button>
+            </div>
+          </div>
+
+          <h3>Version</h3>
+          <div className="setting">
+            <div className="setting__text">
+              <div className="setting__name">deck {version}</div>
+              <div className="setting__desc">
+                Built for {host?.arch || "this machine"}. Linux is the first-class platform;
+                Windows and macOS builds share everything that is not systemd specific.
+              </div>
+            </div>
+            <div className="setting__control">
+              <Button size="sm" onClick={() => api.OpenURL("https://github.com/Its-Delimas/deck/releases")}>
+                Releases
+              </Button>
             </div>
           </div>
 

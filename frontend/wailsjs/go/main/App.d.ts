@@ -88,3 +88,5 @@ export function TermStart(arg1:string,arg2:string,arg3:number,arg4:number):Promi
 export function TermWrite(arg1:string,arg2:string):Promise<void>;
 
 export function ToggleMaximise():Promise<void>;
+
+export function Version():Promise<string>;

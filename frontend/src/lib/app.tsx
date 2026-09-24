@@ -15,6 +15,7 @@ type Ctx = {
   view: ViewId;
   go: (v: ViewId) => void;
   host: system.HostInfo | null;
+  version: string;
   settings: main.Settings;
   update: (patch: Partial<main.Settings>) => void;
   project: proj.Project | null;
@@ -44,6 +45,7 @@ const DEFAULTS = {
 export function AppProvider({ children }: { children: ReactNode }) {
   const [view, setView] = useState<ViewId>("dashboard");
   const [host, setHost] = useState<system.HostInfo | null>(null);
+  const [version, setVersion] = useState("dev");
   const [settings, setSettings] = useState<main.Settings>(DEFAULTS);
   const [project, setProject] = useState<proj.Project | null>(null);
   const [palette, setPalette] = useState(false);
@@ -53,6 +55,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     startMetrics();
     api.GetSnapshot().then(seed).catch(() => {});
     api.GetHost().then(setHost).catch(() => {});
+    api.Version().then(setVersion).catch(() => {});
     api.GetSettings().then((s) => {
       setSettings(s);
       if (s.activeProject) api.OpenProject(s.activeProject).then(setProject).catch(() => {});
@@ -106,9 +109,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<Ctx>(() => ({
-    view, go: setView, host, settings, update, project, openProject, closeProject,
+    view, go: setView, host, version, settings, update, project, openProject, closeProject,
     recent: settings.recentProjects || [], palette, setPalette, focus, jump,
-  }), [view, host, settings, update, project, openProject, closeProject, palette, focus, jump]);
+  }), [view, host, version, settings, update, project, openProject, closeProject, palette, focus, jump]);
 
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;
 }

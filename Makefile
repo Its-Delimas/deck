@@ -7,13 +7,15 @@ TAGS := webkit2_41
 PREFIX ?= $(HOME)/.local
 ICON_SIZES := 16 32 48 64 128 256 512
 
-.PHONY: dev build run clean tidy check install uninstall desktop-shortcut
+VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
+
+.PHONY: dev build run clean tidy check install uninstall desktop-shortcut dist crosscheck
 
 dev:
 	wails dev -tags $(TAGS)
 
 build:
-	wails build -tags $(TAGS) -trimpath
+	wails build -tags $(TAGS) -trimpath -ldflags "-X main.version=$(VERSION)"
 
 run: build
 	./build/bin/deck
@@ -22,12 +24,23 @@ check:
 	go vet ./...
 	cd frontend && npx tsc --noEmit
 
+# Proves the tree still compiles for every target deck ships to.
+crosscheck:
+	GOOS=linux GOARCH=amd64 go build ./...
+	GOOS=windows GOARCH=amd64 go build ./...
+	GOOS=darwin GOARCH=arm64 go build ./...
+	@echo "linux, windows and darwin all build"
+
+# Produces the tarball and .deb that the release workflow publishes.
+dist: build
+	scripts/package-linux.sh $(VERSION)
+
 tidy:
 	go mod tidy
 	cd frontend && npm install
 
 clean:
-	rm -rf build/bin frontend/dist
+	rm -rf build/bin frontend/dist dist
 
 # Installs the binary, its icons and the menu launcher into $(PREFIX); the
 # default of ~/.local needs no root. Icons are installed both into the hicolor

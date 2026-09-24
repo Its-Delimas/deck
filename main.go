@@ -12,8 +12,12 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
+// version is replaced at build time: -ldflags "-X main.version=v0.1.0".
+var version = "dev"
+
 func main() {
 	app := NewApp()
+	app.version = version
 
 	err := wails.Run(&options.App{
 		Title:     "deck",

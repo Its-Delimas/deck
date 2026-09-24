@@ -16,7 +16,7 @@ const VERDICT_TONE: Record<string, "ok" | "warn" | "danger" | "accent" | "defaul
 };
 
 export function About() {
-  const { host, focus } = useApp();
+  const { host, focus, version } = useApp();
   const toast = useToast();
   const [sources, setSources] = useState(false);
   const [checks, setChecks] = useState<health.Check[]>([]);
@@ -88,7 +88,7 @@ export function About() {
           <div style={{ minWidth: 0 }}>
             <div className="about-model truncate">{report?.model || host?.hostname || "Unknown machine"}</div>
             <div className="about-sub">
-              {[report?.vendor, report?.form, host?.platform && `${host.platform} ${host.version}`]
+              {[report?.vendor, report?.form, host?.platform && `${host.platform} ${host.version}`, `deck ${version}`]
                 .filter(Boolean).join(" · ")}
             </div>
           </div>

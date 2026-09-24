@@ -1,0 +1,171 @@
+name: Release
+
+# Tag a commit to publish binaries:
+#   git tag v0.1.0 && git push origin v0.1.0
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build (e.g. v0.1.0)"
+        required: true
+        default: v0.0.0-dev
+
+env:
+  WAILS_VERSION: v2.16.0
+
+jobs:
+  linux:
+    name: Linux
+    runs-on: ubuntu-22.04 # oldest glibc we support, so the binary runs widely
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+          cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }}
+
+      - name: Resolve version
+        id: version
+        run: echo "value=${GITHUB_REF_NAME:-${{ github.event.inputs.version }}}" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: wails build -tags webkit2_41 -trimpath -ldflags "-s -w -X main.version=${{ steps.version.outputs.value }}"
+
+      - name: Package
+        run: scripts/package-linux.sh "${{ steps.version.outputs.value }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: dist/*
+
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+          cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }}
+
+      - name: Install NSIS
+        run: choco install nsis --no-progress -y
+
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: echo "value=${GITHUB_REF_NAME:-${{ github.event.inputs.version }}}" >> "$GITHUB_OUTPUT"
+
+      - name: Build installer and portable executable
+        run: wails build -platform windows/amd64 -nsis -trimpath -ldflags "-s -w -X main.version=${{ steps.version.outputs.value }}"
+
+      - name: Stage artefacts
+        shell: bash
+        run: |
+          version="${{ steps.version.outputs.value }}"
+          version="${version#v}"
+          mkdir -p dist
+          cp build/bin/deck.exe "dist/deck-$version-windows-amd64.exe"
+          # The NSIS output name depends on the Wails version, so match loosely.
+          for f in build/bin/*installer*.exe build/bin/*-setup.exe; do
+            [ -f "$f" ] && cp "$f" "dist/deck-$version-windows-amd64-installer.exe"
+          done
+          ls -l dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: dist/*
+
+  macos:
+    name: macOS
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+          cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }}
+
+      - name: Resolve version
+        id: version
+        run: echo "value=${GITHUB_REF_NAME:-${{ github.event.inputs.version }}}" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: wails build -platform darwin/universal -trimpath -ldflags "-s -w -X main.version=${{ steps.version.outputs.value }}"
+
+      - name: Package
+        run: |
+          version="${{ steps.version.outputs.value }}"
+          version="${version#v}"
+          mkdir -p dist
+          # Unsigned, so ship a zip and document the Gatekeeper step.
+          ditto -c -k --keepParent build/bin/deck.app "dist/deck-$version-macos-universal.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: dist/*
+
+  publish:
+    name: Publish release
+    needs: [linux, windows, macos]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*
+          generate_release_notes: true
+          draft: false
+          body: |
+            ## Install
+
+            **Linux** — `deck_*_amd64.deb` (Debian, Ubuntu, Mint: double-click or
+            `sudo dpkg -i`), or the `.tar.gz`, which contains `install.sh` for a
+            per-user install that needs no root.
+
+            **Windows** — `*-installer.exe` for the usual Start-menu install, or
+            the bare `*.exe` to run it from anywhere. Windows SmartScreen will
+            warn about an unknown publisher: the build is unsigned, so choose
+            *More info → Run anyway*.
+
+            **macOS** — unzip and move `deck.app` to Applications. It is
+            unsigned, so the first launch needs right-click → *Open*.
+
+            Linux is the first-class platform; on Windows and macOS the process,
+            port, storage, project and terminal features work, while the
+            systemd-specific parts of Services and Logs do not apply.

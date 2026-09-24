@@ -9,5 +9,13 @@
   "author": {
     "name": "Its-Delimas",
     "email": "spencerdelimas@gmail.com"
-  }
+  },
+  "info": {
+    "companyName": "Its-Delimas",
+    "productName": "deck",
+    "productVersion": "0.1.0",
+    "copyright": "Copyright © 2026 Its-Delimas",
+    "comments": "Developer system monitor and environment manager"
+  },
+  "nsisType": "multiple"
 }

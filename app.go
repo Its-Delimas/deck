@@ -34,6 +34,7 @@ type App struct {
 	terms    *term.Manager
 	logs     *logs.Streamer
 
+	version    string
 	settings   Settings
 	settingsMu sync.Mutex
 
@@ -126,7 +127,10 @@ func (a *App) SetPollInterval(ms int) {
 
 // ---- System -----------------------------------------------------------
 
-func (a *App) GetHost() system.HostInfo     { return a.system.Host() }
+// Version reports the build the user is running.
+func (a *App) Version() string { return a.version }
+
+func (a *App) GetHost() system.HostInfo      { return a.system.Host() }
 func (a *App) GetSnapshot() *system.Snapshot { return a.system.Collect() }
 
 // ---- Processes --------------------------------------------------------
@@ -268,9 +272,9 @@ func (a *App) RunScript(dir, command, id string) error {
 func (a *App) TermStart(id, dir string, cols, rows int) error {
 	return a.terms.Start(id, dir, cols, rows)
 }
-func (a *App) TermWrite(id, data string) error        { return a.terms.Write(id, data) }
-func (a *App) TermResize(id string, c, r int) error   { return a.terms.Resize(id, c, r) }
-func (a *App) TermClose(id string)                    { a.terms.Close(id) }
+func (a *App) TermWrite(id, data string) error      { return a.terms.Write(id, data) }
+func (a *App) TermResize(id string, c, r int) error { return a.terms.Resize(id, c, r) }
+func (a *App) TermClose(id string)                  { a.terms.Close(id) }
 
 // ---- Logs -------------------------------------------------------------
 

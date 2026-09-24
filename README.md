@@ -7,7 +7,10 @@ what is eating the CPU, what is listening on port 3000, which services are
 running, where the disk went — in one desktop application instead of six
 terminal windows.
 
-![status](https://img.shields.io/badge/platform-linux-informational)
+[![CI](https://github.com/Its-Delimas/deck/actions/workflows/ci.yml/badge.svg)](https://github.com/Its-Delimas/deck/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Its-Delimas/deck?display_name=tag)](https://github.com/Its-Delimas/deck/releases/latest)
+![Platforms](https://img.shields.io/badge/platform-linux%20%7C%20windows%20%7C%20macos-informational)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 ## Features
 
@@ -82,17 +85,55 @@ tags; Linux is the first-class target.
 - Node 18+
 - WebKitGTK 4.1 (`libwebkit2gtk-4.1-dev`) and GTK 3
 
-## Install
+## Download
+
+Builds for every release are on the
+[releases page](https://github.com/Its-Delimas/deck/releases/latest).
+
+| Platform | File | Notes |
+| --- | --- | --- |
+| Debian, Ubuntu, Mint | `deck_<version>_amd64.deb` | Double-click, or `sudo dpkg -i deck_*.deb` |
+| Any Linux | `deck-<version>-linux-amd64.tar.gz` | Contains `install.sh` for a per-user install; no root needed |
+| Windows 10/11 | `deck-<version>-windows-amd64-installer.exe` | Or the bare `.exe` to run without installing |
+| macOS 12+ | `deck-<version>-macos-universal.zip` | Universal binary (Apple silicon and Intel) |
+
+The Windows and macOS builds are unsigned, so the first launch needs
+*More info → Run anyway* on Windows, or right-click → *Open* on macOS.
+
+### Platform support
+
+Linux is the first-class platform and gets the direct `/proc` readers, the
+systemd service control and the full hardware inventory. The other platforms
+share everything that is not tied to Linux internals:
+
+| | Linux | Windows | macOS |
+| --- | :-: | :-: | :-: |
+| Dashboard, charts, thermals | ● | ● | ● |
+| Processes, trees, signals | ● | ● | ● |
+| Ports mapped to processes | ● | ● | ● |
+| Storage analysis | ● | ● | ● |
+| Project mode, git, scripts | ● | ● | ● |
+| Terminal | ● | ● (ConPTY) | ● |
+| Hardware inventory and battery health | ● | ● (WMI) | ○ |
+| Services | systemd + Docker | Docker | Docker |
+| Logs | journald + Docker | Docker | Docker |
+
+## Build from source
 
 ```sh
 make install            # binary, icons and menu launcher under ~/.local
 make desktop-shortcut   # the above, plus a launcher on the desktop
+make dist               # tarball and .deb in dist/
+make crosscheck         # compile for linux, windows and darwin
 make uninstall          # remove everything it installed
 ```
 
 `make install` needs no root: it puts the binary in `~/.local/bin/deck` and the
 launcher in `~/.local/share/applications`, so deck shows up in the application
 menu and in search. Install elsewhere with `make install PREFIX=/usr/local`.
+
+Releases are cut by tagging: `git tag v0.1.0 && git push origin v0.1.0` builds
+and publishes all three platforms.
 
 ## Development
 
@@ -111,3 +152,7 @@ make check    # go vet + TypeScript type check
 | `Ctrl B` | Collapse sidebar |
 | `/` | Focus the filter field |
 | `Del` / `Shift Del` | Terminate / force kill the selected process |
+
+## License
+
+MIT — see [LICENSE](LICENSE).

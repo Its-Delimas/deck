@@ -157,3 +157,7 @@ export function TermWrite(arg1, arg2) {
 export function ToggleMaximise() {
   return window['go']['main']['App']['ToggleMaximise']();
 }
+
+export function Version() {
+  return window['go']['main']['App']['Version']();
+}
