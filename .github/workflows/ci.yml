@@ -28,6 +28,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
 
+      - name: Type-check and build the frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npx tsc --noEmit
+          npm run build
+
       - name: Vet
         run: go vet ./...
 
@@ -36,13 +43,6 @@ jobs:
           GOOS=linux   GOARCH=amd64 go build ./...
           GOOS=windows GOARCH=amd64 go build ./...
           GOOS=darwin  GOARCH=arm64 go build ./...
-
-      - name: Type-check and build the frontend
-        working-directory: frontend
-        run: |
-          npm ci
-          npx tsc --noEmit
-          npm run build
 
       - name: Test
         run: go test ./... -count=1
