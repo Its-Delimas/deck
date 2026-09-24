@@ -5,6 +5,7 @@ package netinfo
 
 import (
 	"sort"
+	"strings"
 	"sync"
 	"time"
 )
@@ -64,7 +65,8 @@ func (c *Collector) Listening() ([]Conn, error) {
 		if cn.State != "LISTEN" {
 			continue
 		}
-		key := cn.Proto + ":" + itoa(cn.Port)
+		// A service bound on both IPv4 and IPv6 is one service, not two.
+		key := strings.TrimSuffix(cn.Proto, "6") + ":" + itoa(cn.Port)
 		if seen[key] {
 			continue
 		}

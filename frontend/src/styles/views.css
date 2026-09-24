@@ -106,6 +106,7 @@
 .env__arrow { color: var(--fg-4); }
 .env__name { color: var(--fg); }
 .env__proc { margin-left: auto; font-size: var(--fs-xs); max-width: 44%; }
+.env__row .num { flex: none; white-space: nowrap; }
 
 /* ---------- Disks ---------- */
 .disks { display: flex; flex-wrap: wrap; gap: var(--sp-5); padding: var(--sp-4); }
@@ -182,6 +183,7 @@
 /* ---------- Services ---------- */
 .svc-grid {
   display: grid;
+  align-items: start;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: var(--sp-3);
   padding: var(--sp-4);
@@ -230,6 +232,8 @@
 .term-tab[data-active="true"] { background: var(--surface-2); border-color: var(--line); color: var(--fg); }
 .term-host { flex: 1; min-height: 0; padding: 8px 10px; }
 .term-host .xterm { height: 100%; }
+.term-host .xterm-viewport { background-color: var(--term-bg) !important; }
+.term-host .xterm-screen { background-color: transparent; }
 
 /* ---------- Logs ---------- */
 .log-list {
@@ -245,14 +249,14 @@
 }
 .log-line {
   display: grid;
-  grid-template-columns: 82px 52px 150px minmax(0, 1fr);
+  grid-template-columns: 94px 52px 160px minmax(0, 1fr);
   gap: 10px;
   padding: 0 var(--sp-5);
   white-space: pre-wrap;
   word-break: break-word;
 }
 .log-line:hover { background: var(--surface-2); }
-.log-line__time { color: var(--fg-4); }
+.log-line__time { color: var(--fg-4); white-space: nowrap; }
 .log-line__level { text-transform: uppercase; font-size: var(--fs-xs); letter-spacing: 0.04em; padding-top: 1px; }
 .log-line__source { color: var(--fg-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .log-line__msg { color: var(--fg-2); }

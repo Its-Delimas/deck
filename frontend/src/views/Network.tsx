@@ -77,7 +77,7 @@ export function Network() {
         </div>
       </header>
 
-      <div className="view__body" style={{ paddingBottom: 0 }}>
+      <div className="view__body" style={{ flex: "none", paddingBottom: 0 }}>
         <Panel
           title="Throughput"
           subtitle={m ? `${bytes(m.network.rxTotal)} in · ${bytes(m.network.txTotal)} out since boot` : undefined}

@@ -20,11 +20,12 @@
 .chart__val { display: flex; align-items: center; gap: 5px; color: var(--fg); }
 .chart__swatch { width: 6px; height: 2px; border-radius: 1px; }
 
-.cores { display: flex; align-items: flex-end; gap: 2px; height: 26px; }
+.cores { display: flex; align-items: flex-end; gap: 3px; height: 26px; }
 .cores__bar {
   position: relative;
   flex: 1;
   min-width: 3px;
+  max-width: 26px;
   height: 100%;
   background: var(--line-soft);
   border-radius: 1px;

@@ -94,7 +94,10 @@ export function Terminal() {
   useEffect(() => {
     const observer = new MutationObserver(() => {
       const next = theme();
-      for (const { term } of terms.current.values()) term.options.theme = next;
+      for (const { term } of terms.current.values()) {
+        term.options.theme = next;
+        term.refresh(0, term.rows - 1);
+      }
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "data-accent"] });
     return () => observer.disconnect();

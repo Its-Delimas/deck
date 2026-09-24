@@ -27,14 +27,14 @@ type Info struct {
 
 type Detail struct {
 	Info
-	Exe      string   `json:"exe"`
-	Cwd      string   `json:"cwd"`
-	Nice     int      `json:"nice"`
-	OpenFDs  int      `json:"openFds"`
-	Env      []string `json:"env"`
-	Children []Info   `json:"children"`
-	ReadBytes  uint64 `json:"readBytes"`
-	WriteBytes uint64 `json:"writeBytes"`
+	Exe        string   `json:"exe"`
+	Cwd        string   `json:"cwd"`
+	Nice       int      `json:"nice"`
+	OpenFDs    int      `json:"openFds"`
+	Env        []string `json:"env"`
+	Children   []Info   `json:"children"`
+	ReadBytes  uint64   `json:"readBytes"`
+	WriteBytes uint64   `json:"writeBytes"`
 }
 
 type Collector struct {
@@ -70,6 +70,7 @@ func (c *Collector) List() ([]Info, error) {
 		return nil, err
 	}
 	for i := range list {
+		list[i].Name = fullName(list[i].Name, list[i].Cmdline)
 		list[i].Kind = classify(list[i].Name, list[i].Cmdline)
 	}
 	sort.Slice(list, func(i, j int) bool { return list[i].CPU > list[j].CPU })
@@ -89,6 +90,28 @@ func (c *Collector) Tree() (map[int32][]Info, error) {
 		byParent[p.PPID] = append(byParent[p.PPID], p)
 	}
 	return byParent, nil
+}
+
+// commMax is the kernel's limit on the comm field. A name of exactly that
+// length has almost certainly been truncated ("WebKitWebProces"), so the real
+// one is recovered from the command line.
+const commMax = 15
+
+func fullName(name, cmdline string) string {
+	if len(name) < commMax || cmdline == "" {
+		return name
+	}
+	binary := cmdline
+	if i := strings.IndexByte(binary, ' '); i > 0 {
+		binary = binary[:i]
+	}
+	if i := strings.LastIndexByte(binary, '/'); i >= 0 {
+		binary = binary[i+1:]
+	}
+	if strings.HasPrefix(binary, name) {
+		return binary
+	}
+	return name
 }
 
 var shells = map[string]bool{

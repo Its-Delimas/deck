@@ -267,21 +267,25 @@ func memoryCheck(ctx context.Context) Check {
 
 	src := make([]byte, size)
 	dst := make([]byte, size)
+	// Touch every page of both buffers first: otherwise the run measures the
+	// kernel faulting in fresh pages rather than memory bandwidth.
 	for i := 0; i < size; i += 4096 {
 		src[i] = byte(i)
+		dst[i] = byte(i)
 	}
+	copy(dst, src)
 
-	deadline := time.Now().Add(1500 * time.Millisecond)
+	start := time.Now()
+	deadline := start.Add(1500 * time.Millisecond)
 	var moved int64
 	for time.Now().Before(deadline) && ctx.Err() == nil {
 		copy(dst, src)
 		moved += size
 	}
-	elapsed := 1.5
-	gbps := float64(moved) / elapsed / (1 << 30)
+	gbps := float64(moved) / time.Since(start).Seconds() / (1 << 30)
 	return Check{
 		Value:   fmt.Sprintf("%.1f GB/s", gbps),
-		Detail:  fmt.Sprintf("%d MB buffer copied repeatedly for 1.5s", size>>20),
+		Detail:  fmt.Sprintf("%d MB buffer copied repeatedly for 1.5s, after both buffers were faulted in", size>>20),
 		Method:  "sequential copy of a 192 MB buffer, bytes moved divided by elapsed time",
 		Verdict: "info",
 	}

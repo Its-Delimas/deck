@@ -7,8 +7,11 @@ package logs
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"io"
 	"os/exec"
+	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -97,14 +100,16 @@ func (s *Streamer) Start(id string, src Source) error {
 func build(ctx context.Context, src Source) *exec.Cmd {
 	switch src.Kind {
 	case "unit":
-		return exec.CommandContext(ctx, "journalctl", "-u", src.Target, "-f", "-n", "400", "--no-pager", "-o", "short-iso")
+		return exec.CommandContext(ctx, "journalctl", "-u", src.Target, "-f", "-n", "400", "--no-pager", "-o", "json")
 	case "docker":
 		return exec.CommandContext(ctx, "docker", "logs", "-f", "--tail", "400", src.Target)
 	case "command":
 		shell, flag := commandShell()
 		return exec.CommandContext(ctx, shell, flag, src.Target)
 	default:
-		args := []string{"-f", "-n", "400", "--no-pager", "-o", "short-iso"}
+		// JSON gives us the journal's own priority and unit name instead of
+		// guessing severity from the text.
+		args := []string{"-f", "-n", "400", "--no-pager", "-o", "json"}
 		if src.Target != "" {
 			args = append([]string{src.Target}, args...)
 		}
@@ -166,20 +171,86 @@ var levelWords = []struct{ token, level string }{
 	{"debug", "debug"}, {"trace", "debug"}, {"notice", "info"},
 }
 
-// parse pulls a timestamp, source and severity out of a raw journal line.
+// ansi matches the escape sequences that progress output (docker compose, npm)
+// sprays into a stream. They are meaningless in a log viewer.
+var ansi = regexp.MustCompile(`\x1b\[[0-9;?]*[ -/]*[@-~]|\x1b[@-Z\\-_]|\r`)
+
+func clean(s string) string {
+	return strings.TrimRight(ansi.ReplaceAllString(s, ""), " \t")
+}
+
+// journalEntry is the subset of journalctl's JSON output we use.
+type journalEntry struct {
+	Timestamp string          `json:"__REALTIME_TIMESTAMP"`
+	Priority  string          `json:"PRIORITY"`
+	Unit      string          `json:"SYSLOG_IDENTIFIER"`
+	Comm      string          `json:"_COMM"`
+	PID       string          `json:"_PID"`
+	Message   json.RawMessage `json:"MESSAGE"`
+}
+
+// priorities maps syslog severities onto the four levels the UI filters by.
+var priorities = map[string]string{
+	"0": "error", "1": "error", "2": "error", "3": "error",
+	"4": "warn", "5": "info", "6": "info", "7": "debug",
+}
+
 func parse(raw string, src Source) Line {
-	l := Line{Time: time.Now().UnixMilli(), Level: "info", Stream: src.ID, Message: raw, Source: src.Label}
-	fields := strings.SplitN(raw, " ", 4)
-	if len(fields) == 4 {
-		if t, err := time.Parse("2006-01-02T15:04:05-0700", fields[0]); err == nil {
-			l.Time = t.UnixMilli()
-			l.Source = strings.TrimSuffix(fields[2], ":")
-			if i := strings.Index(l.Source, "["); i > 0 {
-				l.Source = l.Source[:i]
-			}
-			l.Message = fields[3]
+	if src.Kind == "system" || src.Kind == "unit" {
+		if line, ok := parseJournal(raw, src); ok {
+			return line
 		}
 	}
+	return parseText(raw, src)
+}
+
+// parseJournal reads one JSON entry. MESSAGE is usually a string but is an
+// array of bytes when the line is not valid UTF-8.
+func parseJournal(raw string, src Source) (Line, bool) {
+	var e journalEntry
+	if err := json.Unmarshal([]byte(raw), &e); err != nil {
+		return Line{}, false
+	}
+	l := Line{Level: "info", Stream: src.ID, Time: time.Now().UnixMilli()}
+	if micros, err := strconv.ParseInt(e.Timestamp, 10, 64); err == nil {
+		l.Time = micros / 1000
+	}
+	if lvl, ok := priorities[e.Priority]; ok {
+		l.Level = lvl
+	}
+	l.Source = e.Unit
+	if l.Source == "" {
+		l.Source = e.Comm
+	}
+	if l.Source == "" {
+		l.Source = src.Label
+	}
+	if e.PID != "" {
+		l.Source += "[" + e.PID + "]"
+	}
+	l.Message = clean(decodeMessage(e.Message))
+	return l, true
+}
+
+func decodeMessage(raw json.RawMessage) string {
+	if len(raw) == 0 {
+		return ""
+	}
+	var text string
+	if json.Unmarshal(raw, &text) == nil {
+		return text
+	}
+	var bytes []byte
+	if json.Unmarshal(raw, &bytes) == nil {
+		return string(bytes)
+	}
+	return string(raw)
+}
+
+// parseText handles sources that emit plain lines: docker and project scripts.
+func parseText(raw string, src Source) Line {
+	raw = clean(raw)
+	l := Line{Time: time.Now().UnixMilli(), Level: "info", Stream: src.ID, Message: raw, Source: src.Label}
 	lower := strings.ToLower(raw)
 	for _, w := range levelWords {
 		if strings.Contains(lower, w.token) {

@@ -13,6 +13,8 @@ terminal windows.
 ![Platforms](https://img.shields.io/badge/platform-linux%20%7C%20windows%20%7C%20macos-informational)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
+![deck dashboard](docs/screenshots/dashboard.png)
+
 ## Features
 
 **Dashboard** — CPU, memory, GPU, disk and network at a glance, with live
@@ -61,6 +63,47 @@ does. Results and the whole inventory copy to the clipboard as plain text.
 
 **Command palette** — `Ctrl K` for everything: switch views, open a project,
 jump to a port, restart a service, kill a process.
+
+
+## Screenshots
+
+**Processes** — sortable, searchable, with process trees, a detail pane and
+signal control.
+
+![Processes](docs/screenshots/processes.png)
+
+**This machine** — the inventory with its sources, and battery wear measured
+from the firmware's own counters.
+
+![Hardware inventory](docs/screenshots/about.png)
+
+**Health check** — live measurements: real load on every core, thermals under
+that load, memory bandwidth, disk throughput and a timed battery sample.
+
+![Health check](docs/screenshots/health-check.png)
+
+<details>
+<summary>More screens</summary>
+
+**Project mode** — the processes, ports, git state and scripts of one project,
+with script output streaming in place.
+
+![Project mode](docs/screenshots/project.png)
+
+**Services** — databases, caches and containers from systemd and Docker.
+
+![Services](docs/screenshots/services.png)
+
+**Storage** — directory sizes, reclaimable build artefacts and the largest
+files in a tree.
+
+![Storage](docs/screenshots/storage.png)
+
+**Settings** — accent, theme, density, sample rate and safety preferences.
+
+![Settings](docs/screenshots/settings.png)
+
+</details>
 
 ## Architecture
 

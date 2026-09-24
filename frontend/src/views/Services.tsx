@@ -117,7 +117,7 @@ export function Services() {
                           </Button>
                         </>
                       ) : (
-                        <Button size="sm" variant="primary" icon={<IconPlay size={11} />} busy={busy === `${s.id}:start`} onClick={() => act(s, "start")}>
+                        <Button size="sm" icon={<IconPlay size={11} />} busy={busy === `${s.id}:start`} onClick={() => act(s, "start")}>
                           Start
                         </Button>
                       )}

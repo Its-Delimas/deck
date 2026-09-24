@@ -19,3 +19,21 @@ func TestClassify(t *testing.T) {
 		}
 	}
 }
+
+func TestFullNameRecoversTruncatedComm(t *testing.T) {
+	cases := []struct{ name, cmdline, want string }{
+		// The kernel caps comm at 15 characters; the command line has the rest.
+		{"WebKitWebProces", "/usr/lib/x86_64-linux-gnu/webkit2gtk-4.1/WebKitWebProcess 4 22", "WebKitWebProcess"},
+		{"systemd-resolve", "/usr/lib/systemd/systemd-resolved", "systemd-resolved"},
+		{"xdg-permission-", "/usr/libexec/xdg-permission-store", "xdg-permission-store"},
+		// Short names are already complete and must be left alone.
+		{"node", "node /home/me/app/node_modules/.bin/vite", "node"},
+		// A mismatch means we cannot trust the command line, so keep comm.
+		{"some-long-name1", "/bin/dash -c 'exec something else'", "some-long-name1"},
+	}
+	for _, c := range cases {
+		if got := fullName(c.name, c.cmdline); got != c.want {
+			t.Errorf("fullName(%q) = %q, want %q", c.name, got, c.want)
+		}
+	}
+}

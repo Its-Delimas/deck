@@ -322,6 +322,11 @@ func (a *App) RunHealthCheck() []health.Check {
 		a.healthMu.Unlock()
 	}()
 
+	// deck's own sampling competes with the benchmark, so the metrics ticker
+	// pauses for the duration and the UI coasts on its last snapshot.
+	a.stopTicker()
+	defer a.startTicker()
+
 	return health.Run(ctx, func(id, label string, index, total int) {
 		wruntime.EventsEmit(a.ctx, "health:progress", id, label, index, total)
 	})
