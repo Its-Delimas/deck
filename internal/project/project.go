@@ -210,10 +210,11 @@ func npmRunner(dir string) string {
 func roleOf(name string) string {
 	n := strings.ToLower(name)
 	switch {
-	case strings.Contains(n, "dev"), strings.Contains(n, "start"), strings.Contains(n, "serve"):
-		return "frontend"
+	// Backend first: "api:server" also contains "serve".
 	case strings.Contains(n, "api"), strings.Contains(n, "server"), strings.Contains(n, "backend"):
 		return "backend"
+	case strings.Contains(n, "dev"), strings.Contains(n, "start"), strings.Contains(n, "serve"):
+		return "frontend"
 	case strings.Contains(n, "test"), strings.Contains(n, "lint"), strings.Contains(n, "check"):
 		return "test"
 	case strings.Contains(n, "build"), strings.Contains(n, "compile"):

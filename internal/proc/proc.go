@@ -91,6 +91,15 @@ func (c *Collector) Tree() (map[int32][]Info, error) {
 	return byParent, nil
 }
 
+var shells = map[string]bool{
+	"sh": true, "bash": true, "zsh": true, "fish": true, "dash": true,
+	"ksh": true, "tcsh": true, "csh": true, "nu": true, "elvish": true,
+}
+
+// isShell matches on the whole binary name: substring matching would catch
+// sshd, and a daemon is not a shell.
+func isShell(name string) bool { return shells[name] }
+
 // classify tags a process with a developer-meaningful category so the UI can
 // show what a PID actually *is* rather than just its binary name.
 func classify(name, cmd string) string {
@@ -114,7 +123,7 @@ func classify(name, cmd string) string {
 		return "editor"
 	case strings.Contains(n, "chrome"), strings.Contains(n, "firefox"), strings.Contains(n, "brave"), strings.Contains(n, "chromium"):
 		return "browser"
-	case strings.Contains(n, "bash"), strings.Contains(n, "zsh"), strings.Contains(n, "fish"), strings.Contains(n, "sh"):
+	case isShell(n):
 		return "shell"
 	}
 	return ""
